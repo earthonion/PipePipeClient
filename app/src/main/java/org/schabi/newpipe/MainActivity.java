@@ -27,12 +27,15 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.*;
 import android.content.pm.PackageManager;
+import android.app.PictureInPictureParams;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
 import android.util.Log;
+import android.util.Rational;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -71,6 +74,7 @@ import org.schabi.newpipe.fragments.detail.VideoDetailFragment;
 import org.schabi.newpipe.fragments.list.search.SearchFragment;
 import org.schabi.newpipe.local.feed.notifications.NotificationWorker;
 import org.schabi.newpipe.player.Player;
+import org.schabi.newpipe.player.PlayerService;
 import org.schabi.newpipe.player.event.OnKeyDownListener;
 import org.schabi.newpipe.player.helper.PlayerHolder;
 import org.schabi.newpipe.player.playqueue.PlayQueue;
@@ -580,6 +584,43 @@ public class MainActivity extends AppCompatActivity {
                 getString(R.string.enable_watch_history_key), true);
         drawerLayoutBinding.navigation.getMenu().findItem(ITEM_ID_HISTORY)
                 .setVisible(isHistoryEnabled);
+    }
+
+    // Native Picture-in-Picture: unlike the SYSTEM_ALERT_WINDOW popup player,
+    // Android's system-managed PiP does NOT mark underlying apps as obscured,
+    // so apps that use filterTouchesWhenObscured (Gmail account switcher,
+    // GitHub OAuth webviews, etc.) keep receiving taps.
+    @Override
+    protected void onUserLeaveHint() {
+        super.onUserLeaveHint();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || isInPictureInPictureMode()) {
+            return;
+        }
+        // Only main VIDEO player benefits — POPUP is already floating, AUDIO has nothing to show.
+        final PlayerHolder holder = PlayerHolder.getInstance();
+        if (!holder.isPlayerOpen() || !holder.isPlaying()
+                || holder.getType() != PlayerService.PlayerType.VIDEO) {
+            return;
+        }
+        try {
+            enterPictureInPictureMode(new PictureInPictureParams.Builder()
+                    .setAspectRatio(new Rational(16, 9))
+                    .build());
+        } catch (final IllegalStateException | IllegalArgumentException e) {
+            // PiP unavailable on this device (leanback, disabled by user, etc.) — no-op.
+        }
+    }
+
+    @Override
+    public void onPictureInPictureModeChanged(final boolean isInPip,
+                                              final Configuration newConfig) {
+        super.onPictureInPictureModeChanged(isInPip, newConfig);
+        // Hide navigation chrome while the activity renders as a PiP window so
+        // only the video surface is visible.
+        final ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            if (isInPip) actionBar.hide(); else actionBar.show();
+        }
     }
 
     @Override

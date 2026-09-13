@@ -1,0 +1,23 @@
+name: sync-upstream
+
+on:
+  schedule:
+    - cron: '17 6 * * *'   # daily 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fast-forward main from upstream
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # merge-upstream fast-forwards / merges the parent-repo default branch
+          # into ours. Succeeds silently when clean; fails loudly on conflict —
+          # resolve those by hand with `git fetch upstream && git merge upstream/dev`.
+          gh api -X POST "repos/${{ github.repository }}/merge-upstream" \
+            -f branch=dev
