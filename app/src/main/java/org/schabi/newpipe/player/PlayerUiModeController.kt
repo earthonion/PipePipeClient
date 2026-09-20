@@ -31,11 +31,50 @@ class PlayerUiModeController(private val player: Player) {
         private set
 
     /**
+     * Whether a fullscreen request is waiting for a player that could not honor it yet. The
+     * service is not necessarily up and running, and the player is not necessarily the main video
+     * player, at the moment the request is made, so the request is kept here and applied by
+     * [applyPendingFullscreen] once the playback has been set up.
+     */
+    private var pendingFullscreen = false
+
+    /**
      * Enter or leave fullscreen and let the requested screen orientation follow the player. This
      * is what everything outside the player asks for.
      */
     fun changeFullscreen(fullscreen: Boolean) {
+        if (!fullscreen) {
+            // Leaving fullscreen is also the answer to "do you still want that fullscreen?".
+            pendingFullscreen = false
+        } else if (!canEnterFullscreen()) {
+            pendingFullscreen = true
+            return
+        }
         setFullscreen(fullscreen)
+        applyVideoOrientation()
+    }
+
+    /**
+     * Honor the fullscreen request that [changeFullscreen] could not honor when it was made. This
+     * is what makes "start main player in fullscreen" work on a player that was still being set
+     * up, which is the case for every playback started straight from the detail page (#2928).
+     */
+    fun applyPendingFullscreen() {
+        if (!pendingFullscreen) {
+            return
+        }
+        if (player.audioPlayerSelected() || player.popupPlayerSelected()) {
+            // Only the main video player can be shown fullscreen, so the request is not for this.
+            pendingFullscreen = false
+            return
+        }
+        // Keep the request while the player is still being set up, it is asked again from every
+        // point a playback can become ready: the setup of an intent and of a deferred init.
+        if (!canEnterFullscreen()) {
+            return
+        }
+        pendingFullscreen = false
+        setFullscreen(true)
         applyVideoOrientation()
     }
 
@@ -52,6 +91,7 @@ class PlayerUiModeController(private val player: Player) {
         }
 
         isFullscreen = fullscreen
+        pendingFullscreen = false
         // Pinch zoom is fullscreen-only and never survives either direction of the transition.
         player.gestureController.resetPinchZoom()
         if (!isFullscreen) {
@@ -63,6 +103,11 @@ class PlayerUiModeController(private val player: Player) {
             player.hideControls(0L, 0L)
         }
         player.listeners.onFullscreenStateChanged(isFullscreen)
+        // The detail fragment moves the layout to another parent from that callback and the
+        // surface is recreated around the rotation, which drops the rendered subtitles. The
+        // first frame of the new surface redraws them where it exists; this covers the devices
+        // where the surface survives the transition (#2944).
+        player.binding.subtitleView.post { player.layoutController.reapplyCues() }
 
         val binding = player.binding
         if (isFullscreen) {
@@ -79,6 +124,16 @@ class PlayerUiModeController(private val player: Player) {
         }
         setupScreenRotationButton()
     }
+
+    /** Whether entering fullscreen now would actually reach the screen. */
+    private fun canEnterFullscreen(): Boolean =
+        !player.popupPlayerSelected()
+            && !player.exoPlayerIsNull()
+            && player.listeners.hasFragmentListener()
+            // The detail fragment ignores a fullscreen it cannot react to: without the player view
+            // attached to an activity it neither hides the related items of the tablet layout nor
+            // moves the player, which leaves the screen split between the two.
+            && player.parentActivity != null
 
     /**
      * This will be called when the device orientation changed on its own. The transition follows
@@ -104,6 +159,16 @@ class PlayerUiModeController(private val player: Player) {
         if (!PlayerHelper.shouldRotateFullscreenToVideoOrientation(player.context)
             || DeviceUtils.isTv(player.context)
         ) {
+            return
+        }
+
+        val activity = player.parentActivity
+        if (activity != null && DeviceUtils.isInMultiWindow(activity)) {
+            // An orientation request in split-screen makes the OEM window manager treat the app
+            // as non-resizable: the pane is pinned to half of the screen and the divider can no
+            // longer be dragged. Never lock the orientation here, and drop a lock that was
+            // requested before the window entered multi-window (#2925).
+            setOrientation(activity, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
             return
         }
 
