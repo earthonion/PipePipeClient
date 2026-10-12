@@ -38,6 +38,7 @@
 
     <string name="seek_duration_key">seek_duration</string>
     <string name="seek_duration_default_value">10000</string>
+    <string name="seek_on_media_button_events_key">seek_on_media_button_events</string>
     <string-array name="seek_duration_description">
         <!--   They are overridden in VideoAudioSettingsFragment.java if the translation
         (seconds) exist. Otherwise this array is picked-->
@@ -1774,11 +1775,9 @@
     <string name="export_data_to_newpipe_key">export_data_to_newpipe</string>
     <string name="youtube_player_client_key">youtube_player_client</string>
     <string-array name="youtube_player_client_entries">
-        <item>VisionOS</item>
         <item>MWEB (SABR)</item>
     </string-array>
     <string-array name="youtube_player_client_values">
-        <item>visionos</item>
         <item>mweb</item>
     </string-array>
     <string name="sabr_backoff_notification_channel_id">sabr_backoff</string>
