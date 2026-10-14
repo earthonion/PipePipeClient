@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Handler
 import android.util.Log
 import android.view.*
+import org.schabi.newpipe.ktx.AnimationType
 import org.schabi.newpipe.ktx.animate
 import org.schabi.newpipe.player.PlayerService
 import org.schabi.newpipe.player.Player
@@ -108,6 +109,12 @@ abstract class BasePlayerGestureListener(
     // ///////////////////////////////////////////////////////////////////
 
     override fun onTouch(v: View, event: MotionEvent): Boolean {
+        if (player.isScreenLocked) {
+            if (event.actionMasked == MotionEvent.ACTION_UP) {
+                player.showUnlockButtonTemporarily()
+            }
+            return true
+        }
         return if (player.popupPlayerSelected()) {
             onTouchInPopup(v, event)
         } else {
@@ -139,8 +146,7 @@ abstract class BasePlayerGestureListener(
             gestureController.gestureDetector.onTouchEvent(cancelEvent)
             cancelEvent.recycle()
             if (gestureController.longPressSpeedingEnabled) {
-                player.playbackSpeed /= gestureController.longPressSpeedingFactor
-                gestureController.longPressSpeedingEnabled = false
+                stopLongPressSpeeding()
             }
         }
         if (gestureController.isPinchToZoomEnabled) {
@@ -223,8 +229,7 @@ abstract class BasePlayerGestureListener(
                     isMovingInMain = false
                     onScrollEnd(PlayerService.PlayerType.VIDEO, event)
                 } else if (gestureController.longPressSpeedingEnabled) {
-                    player.playbackSpeed /= gestureController.longPressSpeedingFactor
-                    gestureController.longPressSpeedingEnabled = false
+                    stopLongPressSpeeding()
                 }
             }
         }
@@ -403,7 +408,16 @@ abstract class BasePlayerGestureListener(
         } else {
             gestureController.longPressSpeedingEnabled = true
             player.playbackSpeed *= gestureController.longPressSpeedingFactor
+            val display = gestureController.swipeSpeedDisplay
+            display.text = String.format(java.util.Locale.getDefault(), "%.1fx", player.playbackSpeed)
+            display.animate(true, Player.DEFAULT_CONTROLS_DURATION.toLong(), AnimationType.SCALE_AND_ALPHA)
         }
+    }
+
+    private fun stopLongPressSpeeding() {
+        player.playbackSpeed /= gestureController.longPressSpeedingFactor
+        gestureController.longPressSpeedingEnabled = false
+        gestureController.swipeSpeedDisplay.animate(false, 200, AnimationType.SCALE_AND_ALPHA, 200)
     }
 
     override fun onScroll(

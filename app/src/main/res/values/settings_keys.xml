@@ -1775,10 +1775,14 @@
     <string name="export_data_to_newpipe_key">export_data_to_newpipe</string>
     <string name="youtube_player_client_key">youtube_player_client</string>
     <string-array name="youtube_player_client_entries">
+        <item>VisionOS</item>
         <item>MWEB (SABR)</item>
+        <item>TV (Samsung)</item>
     </string-array>
     <string-array name="youtube_player_client_values">
+        <item>visionos</item>
         <item>mweb</item>
+        <item>tv_samsung</item>
     </string-array>
     <string name="sabr_backoff_notification_channel_id">sabr_backoff</string>
     <string name="sponsor_block_skip_mode_automatic_value" translatable="false">automatic</string>
@@ -1822,4 +1826,7 @@
     <string name="dearrow_auto_format_key" translatable="false">dearrow_auto_format</string>
     <string name="dearrow_clear_cache_key" translatable="false">dearrow_clear_cache</string>
     <string name="dearrow_original_fallback_key" translatable="false">dearrow_original_fallback</string>
+    <string name="comment_filter_by_keyword_key" translatable="false">comment_filter_by_keyword_key</string>
+    <string name="comment_filter_by_username_key" translatable="false">comment_filter_by_username_key</string>
+    <string name="comment_filter_min_likes_key" translatable="false">comment_filter_min_likes_key</string>
 </resources>

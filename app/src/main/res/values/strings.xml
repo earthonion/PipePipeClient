@@ -1081,7 +1081,7 @@
 <string name="export_data_to_newpipe_summary">Export backup in a NewPipe-compatible format</string>
 <string name="settings_category_other_platforms_title">Other platforms</string>
 <string name="youtube_player_client_title">YouTube extraction endpoint</string>
-<string name="webview_unavailable_youtube_hint">WebView unavailable. Please make sure your WebView version is higher than 80.\n\nAndroid 6 and 10: Update Android WebView in Play Store.\nAndroid 7, 8, 9: Update Chrome in Play Store.\nOther versions: This should not happen. Please report it on our GitHub.</string>
+<string name="webview_unavailable_youtube_hint">WebView error. Please try again.\n\nIf the problem persists, please report it on our GitHub.</string>
 <string name="sabr_backoff_notification_channel_name">YouTube playback waiting</string>
 <string name="sabr_backoff_notification_channel_description">Notifications when YouTube requires a playback request to wait</string>
 <string name="sabr_backoff_notification_title">Waiting for YouTube</string>
@@ -1139,4 +1139,22 @@
 <string name="dearrow_original_fallback_title">Keep the original thumbnail</string>
 <string name="dearrow_original_fallback_summary">When no replacement frame is available, show the uploader\'s thumbnail instead of leaving a placeholder.</string>
 <string name="dearrow_settings_summary">Crowdsourced titles and thumbnails for YouTube videos. Tap to enable and tune.</string>
+<string name="player_lock">Lock screen</string>
+<string name="player_unlock">Unlock screen</string>
+<string name="sponsor_block_enter_start_time">Enter start time</string>
+<string name="sponsor_block_enter_end_time">Enter end time</string>
+<string name="sponsor_block_time_input_hint">[[h:]m:]s, e.g. 1:23:45.5</string>
+<string name="sponsor_block_invalid_time_toast">Invalid time</string>
+<string name="video_filtering">Video filtering</string>
+<string name="comment_filtering">Comment filtering</string>
+<string name="comment_filter_by_keyword_summary">Hide comments containing these keywords</string>
+<string name="filter_by_username_title">Filter by username</string>
+<string name="comment_filter_by_username_summary">Hide comments posted by these users</string>
+<string name="comment_filter_min_likes_title">Filter by like count</string>
+<string name="comment_filter_min_likes_summary">Only show comments that have at least this many likes. 0 disables this filter. Pinned comments are always shown</string>
+<string name="comment_filter_min_likes_current">Only show comments that have at least %d likes. Pinned comments are always shown</string>
+<string name="filter_items_hidden">Hidden by your filters: %d items</string>
+<string name="filter_all_items_hidden">All loaded items were hidden by your filters (%d items)</string>
+<string name="filter_no_visible_items_yet">No visible items on the loaded pages. More pages are available</string>
+<string name="filter_continue_loading">Continue loading</string>
 </resources>
